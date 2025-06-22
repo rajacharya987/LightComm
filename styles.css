@@ -1,0 +1,692 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.app-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* Mode Selector */
+.mode-selector {
+    display: flex;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.mode-btn.active {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.mode-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Mode Containers */
+.mode-container {
+    display: none;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.mode-container.active {
+    display: block;
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Sender Mode Styles */
+.input-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+}
+
+.input-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.3s ease;
+}
+
+.input-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.char-count {
+    text-align: right;
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 4px;
+}
+
+.encoding-options, .timing-controls {
+    margin-bottom: 20px;
+}
+
+.encoding-options select, .timing-controls input[type="range"] {
+    margin-left: 10px;
+    padding: 8px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    font-family: inherit;
+}
+
+.timing-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timing-controls input[type="range"] {
+    flex: 1;
+    max-width: 200px;
+}
+
+/* Action Buttons */
+.action-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.stop-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.stop-btn:hover {
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+/* Flash Screen */
+.flash-screen {
+    margin-top: 30px;
+    border-radius: 12px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    color: white;
+    transition: background-color 0.1s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.flash-screen.flashing {
+    background: #ffffff !important;
+    color: #000;
+}
+
+.flash-content {
+    text-align: center;
+    z-index: 2;
+    position: relative;
+}
+
+.progress-bar {
+    width: 300px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin: 15px auto;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.current-bit {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    margin-top: 10px;
+    min-height: 1.5em;
+}
+
+/* Receiver Mode Styles */
+.camera-container {
+    position: relative;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    height: 300px;
+}
+
+#cameraFeed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    pointer-events: none;
+}
+
+.target-area {
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.target-cross {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 10px;
+    position: relative;
+    opacity: 0.8;
+}
+
+.target-cross::before,
+.target-cross::after {
+    content: '';
+    position: absolute;
+    background: white;
+}
+
+.target-cross::before {
+    width: 100%;
+    height: 2px;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+}
+
+.target-cross::after {
+    width: 2px;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+}
+
+/* Detection Info */
+.detection-info {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.brightness-bar {
+    flex: 1;
+    max-width: 150px;
+    height: 8px;
+    background: #e1e5e9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.brightness-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A, #FFEB3B, #FF9800, #F44336);
+    width: 0%;
+    transition: width 0.1s ease;
+}
+
+.status-indicator {
+    font-weight: 600;
+}
+
+/* Received Message */
+.received-message {
+    margin-top: 20px;
+}
+
+.received-message h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.message-display {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 60px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #495057;
+}
+
+.raw-bits {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f1f3f4;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #666;
+    word-break: break-all;
+}
+
+/* Settings Panel */
+.settings-panel {
+    position: fixed;
+    top: 20px;
+    right: -300px;
+    width: 280px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px);
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+
+.settings-panel.active {
+    right: 20px;
+}
+
+.settings-panel h3 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.setting-group {
+    margin-bottom: 20px;
+}
+
+.setting-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.setting-group input[type="range"] {
+    width: 100%;
+    margin-right: 10px;
+}
+
+.settings-btn {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 15px;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .mode-container {
+        padding: 20px;
+    }
+
+    .timing-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .timing-controls input[type="range"] {
+        max-width: 100%;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .brightness-bar {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .settings-panel {
+        right: -280px;
+        top: 10px;
+        width: 260px;
+    }
+
+    .settings-panel.active {
+        right: 10px;
+    }
+
+    .settings-btn {
+        top: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* Loading animation */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Smooth transitions for all interactive elements */
+button, input, select, textarea {
+    transition: all 0.3s ease;
+}
+
+/* Error Modal */
+.error-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.error-content {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.error-content h3 {
+    color: #ff6b6b;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.error-content p {
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.error-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.error-actions .action-btn {
+    margin: 0;
+    flex: 1;
+}
+
+.mobile-instructions {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid #667eea;
+}
+
+.mobile-instructions h4 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.mobile-instructions ol {
+    color: #555;
+    padding-left: 20px;
+}
+
+.mobile-instructions li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+/* Permission Banner */
+.permission-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    padding: 15px 20px;
+    text-align: center;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.permission-banner .close-banner {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.permission-banner .close-banner:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Camera Status Indicators */
+.camera-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.camera-status.success {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 4px solid #4CAF50;
+}
+
+.camera-status.error {
+    background: rgba(255, 107, 107, 0.1);
+    border-left: 4px solid #ff6b6b;
+}
+
+.camera-status.warning {
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid #ffc107;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.8);
+} 

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LightComm - Light-Based Communication App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Mobile Camera Help Banner -->
+        <div id="cameraBanner" class="permission-banner" style="display: none;">
+            📱 Having camera issues on mobile? Use HTTPS or check browser permissions!
+            <button class="close-banner" onclick="document.getElementById('cameraBanner').style.display='none'">×</button>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <h1>💡 LightComm</h1>
+            <p>Communicate through light patterns</p>
+        </header>
+
+        <!-- Mode Selector -->
+        <div class="mode-selector">
+            <button id="senderModeBtn" class="mode-btn active">
+                📱 Sender Mode
+            </button>
+            <button id="receiverModeBtn" class="mode-btn">
+                📷 Receiver Mode
+            </button>
+        </div>
+
+        <!-- Sender Mode -->
+        <div id="senderMode" class="mode-container active">
+            <div class="input-section">
+                <h2>Send Message</h2>
+                <div class="input-group">
+                    <label for="messageInput">Enter your message:</label>
+                    <textarea id="messageInput" placeholder="Type your message here..." maxlength="100"></textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span>/100 characters
+                    </div>
+                </div>
+                
+                <div class="encoding-options">
+                    <label for="encodingSelect">Encoding Method:</label>
+                    <select id="encodingSelect">
+                        <option value="binary">Binary (Fast)</option>
+                        <option value="morse">Morse Code (Classic)</option>
+                    </select>
+                </div>
+
+                <div class="timing-controls">
+                    <label for="flashSpeed">Flash Speed:</label>
+                    <input type="range" id="flashSpeed" min="100" max="1000" value="300" step="50">
+                    <span id="speedValue">300ms</span>
+                </div>
+
+                <button id="sendBtn" class="action-btn">
+                    ⚡ Start Transmission
+                </button>
+                <button id="stopBtn" class="action-btn stop-btn" style="display: none;">
+                    ⏹️ Stop
+                </button>
+            </div>
+
+            <div class="flash-screen" id="flashScreen">
+                <div class="flash-content">
+                    <div id="transmissionStatus">Ready to transmit</div>
+                    <div id="progressBar" class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div id="currentBit" class="current-bit"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Receiver Mode -->
+        <div id="receiverMode" class="mode-container">
+            <div class="receiver-section">
+                <h2>Receive Message</h2>
+                <div class="camera-container">
+                    <video id="cameraFeed" autoplay muted playsinline></video>
+                    <canvas id="analysisCanvas" style="display: none;"></canvas>
+                    <div class="camera-overlay">
+                        <div class="target-area">
+                            <div class="target-cross"></div>
+                            <p>Point camera at flashing screen</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="receiver-controls">
+                    <button id="startReceiveBtn" class="action-btn">
+                        📹 Start Receiving
+                    </button>
+                    <button id="stopReceiveBtn" class="action-btn stop-btn" style="display: none;">
+                        ⏹️ Stop Receiving
+                    </button>
+                </div>
+
+                <div class="detection-info">
+                    <div class="info-row">
+                        <span>Brightness Level:</span>
+                        <div class="brightness-bar">
+                            <div id="brightnessLevel" class="brightness-fill"></div>
+                        </div>
+                        <span id="brightnessValue">0%</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Signal Detected:</span>
+                        <span id="signalStatus" class="status-indicator">🔴 No Signal</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Bits Received:</span>
+                        <span id="bitsReceived">0</span>
+                    </div>
+                </div>
+
+                <div class="received-message">
+                    <h3>Received Message:</h3>
+                    <div id="decodedMessage" class="message-display">
+                        Waiting for transmission...
+                    </div>
+                    <div id="rawBits" class="raw-bits">
+                        <small>Raw bits: <span id="rawBitStream"></span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <h3>Settings</h3>
+            <div class="setting-group">
+                <label for="brightnessThreshold">Brightness Threshold:</label>
+                <input type="range" id="brightnessThreshold" min="0.1" max="0.9" value="0.5" step="0.1">
+                <span id="thresholdValue">0.5</span>
+            </div>
+            <div class="setting-group">
+                <label for="detectionRegion">Detection Region Size:</label>
+                <input type="range" id="detectionRegion" min="0.1" max="1.0" value="0.3" step="0.1">
+                <span id="regionValue">30%</span>
+            </div>
+        </div>
+
+        <button id="settingsBtn" class="settings-btn">⚙️</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
