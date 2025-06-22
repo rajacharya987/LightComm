@@ -16,11 +16,12 @@ class LightComm {
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         // Synchronization system
-        this.syncPattern = '11001100'; // Clear sync pattern
+        this.syncPattern = '1100'; // Shorter, simpler sync pattern
         this.receivedSyncBits = '';
         this.isSynced = false;
         this.lastBitTime = 0;
-        this.minBitDuration = 200; // Minimum time between bits
+        this.minBitDuration = 150; // Reduced minimum time between bits
+        this.syncTimeout = null;
         
         this.morseCode = {
             'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
@@ -332,8 +333,8 @@ class LightComm {
             
                     this.startReceiveBtn.style.display = 'none';
         this.stopReceiveBtn.style.display = 'inline-block';
-        this.signalStatus.textContent = '🟡 Waiting for SYNC pattern...';
-        this.decodedMessage.textContent = 'Waiting for transmission to start. Looking for sync pattern...';
+        this.signalStatus.textContent = '🟡 Waiting for transmission...';
+        this.decodedMessage.textContent = 'Point camera at flashing screen and start transmission...';
         
         // Reset sync state
         this.isSynced = false;
@@ -449,6 +450,22 @@ class LightComm {
         document.body.appendChild(errorModal);
     }
 
+    resetSyncState() {
+        this.isSynced = false;
+        this.receivedSyncBits = '';
+        this.receivedBits = '';
+        if (this.syncTimeout) {
+            clearTimeout(this.syncTimeout);
+            this.syncTimeout = null;
+        }
+        if (this.isReceiving) {
+            this.signalStatus.textContent = '🟡 Waiting for transmission...';
+            this.decodedMessage.textContent = 'Looking for light transmission...';
+            this.decodedMessage.style.background = '#f8f9fa';
+            this.decodedMessage.style.borderColor = '#dee2e6';
+        }
+    }
+
     resetReceiverDisplay() {
         // Clear receiver data on startup
         this.receivedBits = '';
@@ -535,19 +552,29 @@ class LightComm {
                     // Still waiting for sync pattern
                     this.receivedSyncBits += bitValue;
                     
-                    // Check if we have the sync pattern
-                    if (this.receivedSyncBits.includes(this.syncPattern)) {
+                    // More flexible sync detection
+                    const hasRegularPattern = this.receivedSyncBits.length >= 4;
+                    const hasStrongSignal = diff > 0.3; // Strong light changes
+                    const quickSync = this.receivedSyncBits.length >= 6 && hasStrongSignal;
+                    
+                    if (this.receivedSyncBits.includes(this.syncPattern) || quickSync || hasRegularPattern) {
+                        // Found sync or strong signal pattern - start recording
                         this.isSynced = true;
                         this.receivedBits = '';
-                        this.signalStatus.textContent = '🟢 SYNC Found! Recording message...';
-                        this.decodedMessage.textContent = 'Sync pattern detected! Recording message bits...';
-                        this.decodedMessage.style.background = '#fff3cd';
-                        this.decodedMessage.style.borderColor = '#ffeaa7';
+                        this.signalStatus.textContent = '🟢 Signal Detected! Recording...';
+                        this.decodedMessage.textContent = 'Light transmission detected! Recording bits...';
+                        this.decodedMessage.style.background = '#d4edda';
+                        this.decodedMessage.style.borderColor = '#c3e6cb';
+                        
+                        // Reset sync after 45 seconds of inactivity
+                        this.syncTimeout = setTimeout(() => {
+                            this.resetSyncState();
+                        }, 45000);
                     } else {
-                        this.signalStatus.textContent = `🟡 Waiting for SYNC... (${this.receivedSyncBits.length} bits)`;
-                        // Keep only recent bits to avoid memory issues
-                        if (this.receivedSyncBits.length > 20) {
-                            this.receivedSyncBits = this.receivedSyncBits.slice(-10);
+                        this.signalStatus.textContent = `🟡 Detecting... (${this.receivedSyncBits.length} changes)`;
+                        // Keep only recent bits
+                        if (this.receivedSyncBits.length > 12) {
+                            this.receivedSyncBits = this.receivedSyncBits.slice(-6);
                         }
                     }
                 } else {
@@ -556,12 +583,20 @@ class LightComm {
                     const bitCount = this.receivedBits.length;
                     this.updateReceivedData();
                     
+                    // Reset sync timeout on activity
+                    if (this.syncTimeout) {
+                        clearTimeout(this.syncTimeout);
+                        this.syncTimeout = setTimeout(() => {
+                            this.resetSyncState();
+                        }, 45000);
+                    }
+                    
                     this.signalStatus.textContent = `🟢 Bit ${bitCount}: ${bitValue}`;
                     setTimeout(() => {
                         if (this.isReceiving) {
                             this.signalStatus.textContent = '🟡 Recording...';
                         }
-                    }, 300);
+                    }, 200);
                 }
                 
                 this.lastBitTime = currentTime;
