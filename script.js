@@ -70,6 +70,7 @@ class LightComm {
         this.analysisCanvas = document.getElementById('analysisCanvas');
         this.startReceiveBtn = document.getElementById('startReceiveBtn');
         this.stopReceiveBtn = document.getElementById('stopReceiveBtn');
+        this.clearDataBtn = document.getElementById('clearDataBtn');
         this.brightnessLevel = document.getElementById('brightnessLevel');
         this.brightnessValue = document.getElementById('brightnessValue');
         this.signalStatus = document.getElementById('signalStatus');
@@ -100,6 +101,7 @@ class LightComm {
         // Receiver mode
         this.startReceiveBtn.addEventListener('click', () => this.startReceiving());
         this.stopReceiveBtn.addEventListener('click', () => this.stopReceiving());
+        this.clearDataBtn.addEventListener('click', () => this.clearReceivedData());
         
         // Settings
         this.settingsBtn.addEventListener('click', () => this.toggleSettings());
@@ -483,6 +485,22 @@ class LightComm {
         if (this.signalStatus) this.signalStatus.textContent = '🔴 Not Started';
     }
 
+    clearReceivedData() {
+        // Clear all received data but keep receiver running
+        this.receivedBits = '';
+        this.receivedSyncBits = '';
+        this.brightnessHistory = [];
+        this.bitsReceived.textContent = '0';
+        this.rawBitStream.textContent = '';
+        this.decodedMessage.textContent = this.isReceiving ? 'Data cleared. Ready for new transmission...' : 'Click "Start Receiving" to begin.';
+        this.decodedMessage.style.background = '#f8f9fa';
+        this.decodedMessage.style.borderColor = '#dee2e6';
+        
+        if (this.isReceiving) {
+            this.resetSyncState();
+        }
+    }
+
     startBrightnessAnalysis() {
         const ctx = this.analysisCanvas.getContext('2d');
         
@@ -592,6 +610,12 @@ class LightComm {
                     }
                     
                     this.signalStatus.textContent = `🟢 Bit ${bitCount}: ${bitValue}`;
+                    
+                    // Try to decode frequently for real-time feedback
+                    if (bitCount % 8 === 0 && bitCount >= 16) {
+                        this.tryDecodeMessage();
+                    }
+                    
                     setTimeout(() => {
                         if (this.isReceiving) {
                             this.signalStatus.textContent = '🟡 Recording...';
@@ -627,50 +651,105 @@ class LightComm {
             
             if (messageBits.length > 0) {
                 // Try binary decoding first
-                if (messageBits.length % 8 === 0) {
+                if (messageBits.length >= 8) {
                     try {
-                        const decoded = this.binaryToText(messageBits);
+                        // Pad to multiple of 8 if needed
+                        let binaryData = messageBits;
+                        while (binaryData.length % 8 !== 0) {
+                            binaryData += '0';
+                        }
+                        
+                        const decoded = this.binaryToText(binaryData);
                         if (this.isPrintableText(decoded)) {
-                            this.decodedMessage.textContent = `📝 ${decoded}`;
+                            this.decodedMessage.textContent = `📝 Message: "${decoded}"`;
                             this.decodedMessage.style.background = '#d4edda';
                             this.decodedMessage.style.borderColor = '#c3e6cb';
+                            
+                            // Show success notification
+                            this.signalStatus.textContent = '🎉 Message Decoded!';
+                            setTimeout(() => {
+                                if (this.isReceiving) {
+                                    this.signalStatus.textContent = '🟡 Ready for next message...';
+                                }
+                            }, 3000);
                             return;
                         }
                     } catch (e) {
-                        // Binary decoding failed
+                        console.log('Binary decoding failed:', e);
                     }
                 }
                 
                 // Try morse decoding
-                try {
-                    const morse = messageBits.replace(/111/g, '-').replace(/1/g, '.').replace(/000/g, '/').replace(/00/g, ' ');
-                    const decoded = this.morseToText(morse);
-                    if (this.isPrintableText(decoded)) {
-                        this.decodedMessage.textContent = `📝 ${decoded}`;
-                        this.decodedMessage.style.background = '#d4edda';
-                        this.decodedMessage.style.borderColor = '#c3e6cb';
-                        return;
+                if (messageBits.length >= 4) {
+                    try {
+                        const morse = messageBits.replace(/111/g, '-').replace(/1/g, '.').replace(/000/g, '/').replace(/00/g, ' ');
+                        const decoded = this.morseToText(morse);
+                        if (this.isPrintableText(decoded)) {
+                            this.decodedMessage.textContent = `📝 Message: "${decoded}"`;
+                            this.decodedMessage.style.background = '#d4edda';
+                            this.decodedMessage.style.borderColor = '#c3e6cb';
+                            
+                            // Show success notification
+                            this.signalStatus.textContent = '🎉 Message Decoded!';
+                            setTimeout(() => {
+                                if (this.isReceiving) {
+                                    this.signalStatus.textContent = '🟡 Ready for next message...';
+                                }
+                            }, 3000);
+                            return;
+                        }
+                    } catch (e) {
+                        console.log('Morse decoding failed:', e);
                     }
-                } catch (e) {
-                    // Morse decoding failed
                 }
+            }
+        } else if (bits.length >= 16) {
+            // Try to decode without markers (in case they were missed)
+            try {
+                // Look for patterns that might be text
+                for (let i = 0; i <= bits.length - 8; i += 8) {
+                    const chunk = bits.substr(i, Math.min(8 * 10, bits.length - i)); // Try up to 10 characters
+                    if (chunk.length >= 8 && chunk.length % 8 === 0) {
+                        const decoded = this.binaryToText(chunk);
+                        if (this.isPrintableText(decoded) && decoded.length >= 2) {
+                            this.decodedMessage.textContent = `📝 Partial: "${decoded}"`;
+                            this.decodedMessage.style.background = '#fff3cd';
+                            this.decodedMessage.style.borderColor = '#ffeaa7';
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Partial decoding failed:', e);
             }
         }
         
-        // Show partial progress
-        if (bits.length > 10) {
-            this.decodedMessage.textContent = 'Receiving data... Please keep camera steady.';
-            this.decodedMessage.style.background = '#fff3cd';
-            this.decodedMessage.style.borderColor = '#ffeaa7';
+        // Show receiving progress
+        if (bits.length > 4) {
+            const expectedBits = Math.ceil(bits.length / 8) * 8;
+            const progress = Math.min(100, (bits.length / expectedBits) * 100);
+            this.decodedMessage.textContent = `Receiving... ${bits.length} bits (${Math.round(progress)}%)`;
+            this.decodedMessage.style.background = '#e2e3e5';
+            this.decodedMessage.style.borderColor = '#ced4da';
+        } else {
+            this.decodedMessage.textContent = 'Waiting for more data...';
+            this.decodedMessage.style.background = '#f8f9fa';
+            this.decodedMessage.style.borderColor = '#dee2e6';
         }
     }
 
     isPrintableText(text) {
+        if (!text || text.length === 0) return false;
+        
         // Check if text contains mostly printable characters
-        const printableChars = text.split('').filter(char => 
-            char.charCodeAt(0) >= 32 && char.charCodeAt(0) <= 126
-        ).length;
-        return printableChars / text.length > 0.8 && text.length > 0;
+        const printableChars = text.split('').filter(char => {
+            const code = char.charCodeAt(0);
+            return (code >= 32 && code <= 126) || code === 10 || code === 13; // Include newlines
+        }).length;
+        
+        // More lenient threshold for shorter messages
+        const threshold = text.length <= 3 ? 0.5 : 0.7;
+        return printableChars / text.length > threshold;
     }
 
     stopReceiving() {
