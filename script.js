@@ -34,6 +34,7 @@ class LightComm {
         this.updateFlashSpeed();
         this.updateBrightnessThreshold();
         this.updateDetectionRegion();
+        this.resetReceiverDisplay();
     }
 
     initializeElements() {
@@ -222,24 +223,37 @@ class LightComm {
 
         const bit = this.encodedMessage[this.currentBitIndex];
         const isFlash = bit === '1';
+        const bitNumber = this.currentBitIndex + 1;
         
-        // Update UI
-        this.currentBit.textContent = `Bit ${this.currentBitIndex + 1}/${this.encodedMessage.length}: ${bit}`;
+        // Update progress bar
         this.progressBar.style.width = `${((this.currentBitIndex + 1) / this.encodedMessage.length) * 100}%`;
         
-        // Flash the screen
+        // Set background color based on bit value
         if (isFlash) {
-            this.flashScreen.classList.add('flashing');
+            // Bit 1 = White background, black text
+            this.flashScreen.style.backgroundColor = '#ffffff';
+            this.flashScreen.style.color = '#000000';
         } else {
-            this.flashScreen.classList.remove('flashing');
+            // Bit 0 = Black background, white text
+            this.flashScreen.style.backgroundColor = '#000000';
+            this.flashScreen.style.color = '#ffffff';
         }
+        
+        // Display large, centered bit information
+        this.transmissionStatus.textContent = `Transmitting...`;
+        this.currentBit.innerHTML = `
+            <div class="large-bit-display">
+                <div class="huge-bit-number">${bitNumber}</div>
+                <div class="bit-value-text">Bit: ${bit}</div>
+                <div class="progress-text">${bitNumber} / ${this.encodedMessage.length}</div>
+            </div>
+        `;
         
         this.currentBitIndex++;
         
         // Schedule next bit
         this.transmissionInterval = setTimeout(() => {
-            this.flashScreen.classList.remove('flashing');
-            setTimeout(() => this.transmitNextBit(), this.flashDuration * 0.2); // Short pause between bits
+            this.transmitNextBit();
         }, this.flashDuration);
     }
 
@@ -408,6 +422,20 @@ class LightComm {
         document.body.appendChild(errorModal);
     }
 
+    resetReceiverDisplay() {
+        // Clear receiver data on startup
+        this.receivedBits = '';
+        this.brightnessHistory = [];
+        if (this.bitsReceived) this.bitsReceived.textContent = '0';
+        if (this.rawBitStream) this.rawBitStream.textContent = '';
+        if (this.decodedMessage) {
+            this.decodedMessage.textContent = 'Click "Start Receiving" to begin detecting light signals.';
+            this.decodedMessage.style.background = '#f8f9fa';
+            this.decodedMessage.style.borderColor = '#dee2e6';
+        }
+        if (this.signalStatus) this.signalStatus.textContent = '🔴 Not Started';
+    }
+
     startBrightnessAnalysis() {
         const ctx = this.analysisCanvas.getContext('2d');
         
@@ -451,6 +479,11 @@ class LightComm {
     }
 
     processBrightness(brightness) {
+        // Only process if we're actively receiving
+        if (!this.isReceiving) {
+            return;
+        }
+        
         this.brightnessHistory.push(brightness);
         if (this.brightnessHistory.length > 10) {
             this.brightnessHistory.shift();
@@ -464,10 +497,14 @@ class LightComm {
             
             if (diff > 0.1) { // Significant change detected
                 const isHigh = current > this.brightnessThreshold;
-                this.receivedBits += isHigh ? '1' : '0';
+                const bitValue = isHigh ? '1' : '0';
+                this.receivedBits += bitValue;
+                
+                // Show received bit number
+                const bitCount = this.receivedBits.length;
                 this.updateReceivedData();
                 
-                this.signalStatus.textContent = '🟢 Signal Detected';
+                this.signalStatus.textContent = `🟢 Bit ${bitCount}: ${bitValue}`;
                 setTimeout(() => {
                     if (this.isReceiving) {
                         this.signalStatus.textContent = '🟡 Detecting...';
@@ -563,6 +600,15 @@ class LightComm {
         this.startReceiveBtn.style.display = 'inline-block';
         this.stopReceiveBtn.style.display = 'none';
         this.signalStatus.textContent = '🔴 Stopped';
+        
+        // Reset all receiver data
+        this.receivedBits = '';
+        this.brightnessHistory = [];
+        this.bitsReceived.textContent = '0';
+        this.rawBitStream.textContent = '';
+        this.decodedMessage.textContent = 'Receiver stopped. Click "Start Receiving" to begin.';
+        this.decodedMessage.style.background = '#f8f9fa';
+        this.decodedMessage.style.borderColor = '#dee2e6';
         
         // Reset brightness display
         this.brightnessLevel.style.width = '0%';

@@ -246,6 +246,35 @@ body {
     min-height: 1.5em;
 }
 
+/* Large Bit Display for Transmission */
+.large-bit-display {
+    text-align: center;
+    padding: 20px;
+}
+
+.huge-bit-number {
+    font-size: 8rem;
+    font-weight: 900;
+    line-height: 1;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: 'Inter', sans-serif;
+}
+
+.bit-value-text {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 15px 0;
+    letter-spacing: 2px;
+}
+
+.progress-text {
+    font-size: 1.5rem;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-top: 10px;
+}
+
 /* Receiver Mode Styles */
 .camera-container {
     position: relative;
